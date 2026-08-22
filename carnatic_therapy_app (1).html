@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Carnatic Speech Therapy</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap');
 :root{--maroon:#1B3A2D;--maroon2:#1F4A38;--gold:#D4AF00;--gold2:#F0CC00;--cream:#F5F2E8;--parchment:#E8E4D4;--ink:#1A2510;--muted:#4A5E3A;--border:#B8C89A;--surface:#FFFFFF;--teal:#1B3A2D;--teal2:#163020;--amber:#A07800;--red:#8B2000}
@@ -156,27 +157,184 @@ body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--ink);min
 .btn-p:hover{background:var(--maroon2)}
 .btn-s{flex:1;padding:9px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--ink);font-size:12px;font-weight:500;cursor:pointer}
 .btn-s:hover{background:var(--parchment)}
-.upload-zone{border:2px dashed var(--border);border-radius:10px;padding:22px;text-align:center;cursor:pointer;background:var(--parchment);transition:all .2s}
+.upload-zone{border:2px dashed rgba(255,255,255,.3);border-radius:10px;padding:22px;text-align:center;cursor:pointer;background:rgba(255,255,255,.08);transition:all .2s}
 .upload-zone:hover{border-color:var(--gold);background:#E0EEC8}
 .upload-zone.has-file{border-color:var(--teal);background:#E8F0D8}
-.prog-bar{height:6px;border-radius:3px;background:var(--border);overflow:hidden;margin:8px 0}
+.prog-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.15);overflow:hidden;margin:8px 0}
 .prog-fill{height:100%;border-radius:3px;background:var(--teal);transition:width .3s}
-.field-lbl{display:block;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+.field-lbl{display:block;font-size:10px;font-weight:600;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
 .field-inp{width:100%;font-size:12px;padding:7px 10px;border:1px solid var(--border);border-radius:7px;color:var(--ink);background:#FFFFFF;color:#1A2510;font-family:inherit}
 .field-ta{width:100%;font-size:12px;padding:7px 10px;border:1px solid var(--border);border-radius:7px;color:var(--ink);background:#FFFFFF;color:#1A2510;font-family:inherit;min-height:56px;resize:vertical}
-.tab-row{display:flex;border-radius:8px;overflow:hidden;border:1px solid var(--border);margin-bottom:12px}
+.tab-row{display:flex;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.25);margin-bottom:12px}
 .tab-btn{flex:1;padding:8px;font-size:11px;font-weight:600;border:none;cursor:pointer;transition:all .15s}
 .tab-btn.active{background:var(--maroon);color:#ffffff}
-.tab-btn.inactive{background:var(--parchment);color:var(--muted)}
+.tab-btn.inactive{background:rgba(255,255,255,.12);color:rgba(255,255,255,.6)}
 select{font-size:11px;padding:3px 6px;border-radius:5px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.3);color:#fff;cursor:pointer}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spin{animation:spin .7s linear infinite;display:inline-block}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE LAYOUT
+   Breakpoints:
+     >1200px  full three-column (sidebar | practice | right panel)
+     900-1200 narrower side panels
+     600-900  7-inch tablets: sidebar collapses to drawer,
+              right panel moves BELOW practice area
+     <600px   phones: single column, compact instrument bar
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Sidebar toggle button — hidden on desktop, shown on small screens */
+.menu-toggle{display:none;width:30px;height:30px;border-radius:6px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;font-size:15px;cursor:pointer;align-items:center;justify-content:center;flex-shrink:0}
+.menu-toggle:hover{background:rgba(255,255,255,.2)}
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:90}
+.sidebar-backdrop.open{display:block}
+
+/* ── Large laptops / desktops: slightly tighter panels ────────────── */
+@media (max-width:1300px){
+  .app-body{grid-template-columns:225px 1fr}
+  .content{grid-template-columns:1fr 310px}
+  .inst-bar{gap:14px;padding:.5rem 1rem}
+  .tpad{width:40px;height:40px;font-size:8px}
+  .tpad .hindi{font-size:11px}
+  .bpm-num{font-size:25px}
+  .play-btn{width:40px;height:40px;font-size:16px}
+  .tb{width:26px;height:26px;font-size:8px}
+}
+
+/* ── Small laptops / large tablets ────────────────────────────────── */
+@media (max-width:1100px){
+  .app-body{grid-template-columns:200px 1fr}
+  .content{grid-template-columns:1fr 280px}
+  .practice-area{padding:1rem}
+  .right-panel{padding:.75rem;gap:8px}
+  .inst-bar{gap:12px}
+  .tabla-pads{gap:4px}
+  .tpad{width:36px;height:36px}
+  .tpad .hindi{font-size:10px}
+  .tpad span:last-child{font-size:8px}
+  .nc{font-size:13px;min-width:27px;padding:3px 5px}
+  .verse-title{font-size:14px}
+}
+
+/* ── 7-INCH TABLETS (landscape ~1024x600, portrait ~600x1024) ─────── */
+@media (max-width:900px){
+  /* Sidebar becomes a slide-in drawer */
+  .app-body{grid-template-columns:1fr}
+  .menu-toggle{display:flex}
+  .sidebar{
+    position:fixed;top:52px;left:0;bottom:0;width:240px;z-index:95;
+    transform:translateX(-100%);transition:transform .25s ease;
+    max-height:none;box-shadow:2px 0 12px rgba(0,0,0,.25);
+  }
+  .sidebar.open{transform:translateX(0)}
+
+  /* Right panel moves BELOW the practice area instead of beside it */
+  .content{grid-template-columns:1fr;overflow-y:auto;max-height:calc(100vh - 52px - 60px)}
+  .practice-area{max-height:none;overflow:visible;padding:.9rem}
+  .right-panel{
+    border-left:none;border-top:1px solid var(--border);
+    max-height:none;overflow:visible;padding:.9rem;
+    display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;
+  }
+  .right-panel .panel-sec:first-child{grid-column:1 / -1}
+
+  /* Instrument bar: compact, wraps to two rows */
+  .inst-bar{gap:10px;padding:.45rem .8rem}
+  .ig-lbl{font-size:8px}
+  .tpad{width:34px;height:34px}
+  .tpad .hindi{font-size:9px;margin-bottom:0}
+  .tpad span:last-child{font-size:7px}
+  .bpm-num{font-size:22px;min-width:36px}
+  .bpm-sub{font-size:8px}
+  .play-btn{width:38px;height:38px;font-size:15px}
+  .tb{width:24px;height:24px;font-size:8px}
+  .tb .bl{font-size:5px}
+  .pitch-sl{width:60px}
+  .rec-btn{padding:3px 8px;font-size:9px}
+
+  /* Modals: nearly full-width on tablets */
+  .md{width:94vw;max-height:88vh}
+  .md-body{padding:.9rem 1rem}
+}
+
+/* ── Small tablets / large phones ─────────────────────────────────── */
+@media (max-width:700px){
+  .app-header{padding:0 .8rem;height:48px}
+  .app-header h1{font-size:16px}
+  .patient-badge{font-size:10px;padding:2px 8px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .hbtn{padding:3px 8px;font-size:10px}
+  .sidebar{top:48px}
+  .content{max-height:calc(100vh - 48px - 56px)}
+
+  /* Right panel back to single column so cards aren't squashed */
+  .right-panel{grid-template-columns:1fr}
+
+  /* Instrument bar: allow horizontal scroll rather than cramming */
+  .inst-bar{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;gap:12px;padding:.4rem .6rem;-webkit-overflow-scrolling:touch}
+  .inst-bar::-webkit-scrollbar{height:3px}
+  .inst-bar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25);border-radius:2px}
+  .ig-col{flex-shrink:0}
+
+  .practice-area{padding:.75rem}
+  .verse-body{padding:.7rem .8rem}
+  .nc{font-size:12px;min-width:24px;padding:2px 4px}
+  .rchips{gap:4px}
+  .rc{font-size:9px;padding:2px 6px}
+  .rc.why{flex:1 1 100%}
+}
+
+/* ── Phones ───────────────────────────────────────────────────────── */
+@media (max-width:520px){
+  .app-header h1{font-size:14px}
+  .md{width:96vw}
+  .md-body{padding:.8rem}
+  .md-score-row{gap:14px}
+  .msc .v{font-size:30px}
+  .cr-score{font-size:36px}
+  .note-lines{gap:3px}
+  .ln-num{width:20px;font-size:8px}
+  .ncells{padding:3px 4px;gap:1px}
+  .nc{font-size:11px;min-width:22px}
+  .tab-row{flex-direction:column}
+  .tab-btn{padding:7px}
+  /* Intake fields stack */
+  .md-body > div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr !important}
+}
+
+/* ── Short screens (7-inch landscape 1024x600) ────────────────────── */
+@media (max-height:650px){
+  .app-header{height:46px}
+  .sidebar{top:46px}
+  .inst-bar{padding:.35rem .8rem}
+  .tpad{width:32px;height:32px}
+  .play-btn{width:34px;height:34px;font-size:14px}
+  .bpm-num{font-size:20px}
+  .tb{width:22px;height:22px}
+  .md{max-height:92vh}
+  .practice-area{padding:.7rem}
+  .verse-body{padding:.6rem .8rem}
+}
+
+/* ── Touch targets: bigger tap areas on touch devices ─────────────── */
+@media (hover:none) and (pointer:coarse){
+  .tpad{min-width:42px;min-height:42px}
+  .play-btn{min-width:44px;min-height:44px}
+  .btn-tiny{min-width:30px;min-height:30px}
+  .lv-item{padding:11px}
+  .check-btn{padding:12px}
+  .tab-btn{padding:11px}
+  input[type=range]{height:26px}
+}
+
 </style>
 </head>
 <body>
 
 <header class="app-header">
-  <h1>Carnatic Speech Therapy</h1>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle menu">&#9776;</button>
+    <h1>Carnatic Speech Therapy</h1>
+  </div>
   <div style="display:flex;align-items:center;gap:10px">
     <span class="patient-badge" id="patient-badge">No patient loaded</span>
     <button class="hbtn" onclick="showIntake()">New patient</button>
@@ -191,9 +349,9 @@ select{font-size:11px;padding:3px 6px;border-radius:5px;border:1px solid rgba(25
       <button class="md-cl" onclick="loadDemo()">&#215;</button>
     </div>
     <div class="md-body">
-      <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Upload the patient recording — the full analysis runs in your browser. No server needed.</p>
+      <p style="font-size:12px;color:rgba(255,255,255,.8);margin-bottom:14px;line-height:1.6">Enter your name and age, then read the diagnostic passage aloud and record it. The app will analyse your recording and build a personalised therapy programme.</p>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
         <div>
           <label class="field-lbl">Patient name</label>
           <input id="in-name" type="text" placeholder="Full name" class="field-inp">
@@ -204,71 +362,68 @@ select{font-size:11px;padding:3px 6px;border-radius:5px;border:1px solid rgba(25
         </div>
       </div>
 
-      <div style="margin-bottom:12px">
-        <label class="field-lbl">Sentence the patient read (paste the diagnostic passage here)</label>
-        <textarea id="in-sentence" class="field-ta" placeholder="Paste the passage for syllable rate calculation. Leave blank for auto-detection."></textarea>
+      <!-- Diagnostic passage display -->
+      <div style="background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:12px 14px;margin-bottom:14px">
+        <div style="font-size:10px;font-weight:600;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px">Read this passage aloud</div>
+        <p id="passage-display" style="font-size:13px;color:#ffffff;line-height:1.85;font-family:'EB Garamond',serif">Sam's shy cat chased five zebras through the big village near our yellow farm. The cook quickly washed both dishes with her rough gloves and sang a joyful song. Peter picked peppers while his twin brother measured the long wooden fence. Don't zip your jacket near the sharp rocks or you might get hurt. Vivid vines hung low over the narrow path that leads to the misty lake. She sells azure treasure at leisure, measuring the beige genre with pleasure. The judge charged George with using rouge on the beige vision. Whether the weather is warm or whether it's not, we will gather feathers together. The phone rang through the thick fog as young boys played rough games on the bridge. Quick wax jobs vex daft quiz kids. Zinc mixed with oxygen forms a curious molecule. Hugh knew the new gnu flew through the blue dew.</p>
+        <div style="margin-top:8px;font-size:10px;color:rgba(255,255,255,.4)">~120 syllables &nbsp;&#183;&nbsp; ~55&#8211;75 seconds fluent &nbsp;&#183;&nbsp; covers all 40 phonemes</div>
       </div>
 
-      <!-- Tab switcher -->
-      <div class="tab-row">
-        <button class="tab-btn active" id="tab-audio" onclick="switchTab('audio')">Upload audio file</button>
-        <button class="tab-btn inactive" id="tab-json" onclick="switchTab('json')">Paste Colab JSON</button>
+      <!-- Tab: Record vs Upload -->
+      <div class="tab-row" style="margin-bottom:12px">
+        <button class="tab-btn active" id="tab-record" onclick="switchTab('record')">Record yourself</button>
+        <button class="tab-btn inactive" id="tab-audio" onclick="switchTab('audio')">Upload existing file</button>
+        <button class="tab-btn inactive" id="tab-json" onclick="switchTab('json')">Paste JSON</button>
       </div>
 
-      <!-- AUDIO PANEL -->
-      <div id="panel-audio">
-        <!-- File input sits OUTSIDE the clickable zone to avoid click-loop -->
-        <input type="file" id="audio-file" accept="audio/*"
-               style="display:none" onchange="fileChosen(this.files)">
-        <div class="upload-zone" id="upload-zone" id="upload-zone">
+      <!-- RECORD PANEL (default) -->
+      <div id="panel-record">
+        <div style="text-align:center;padding:4px 0 10px">
+          <div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:12px">Read the full passage above, then press Stop. Aim for your natural speaking pace — do not slow down.</div>
+          <!-- Big record button -->
+          <div id="rec-circle" onclick="toggleIntakeRecord()"
+               style="width:80px;height:80px;border-radius:50%;border:3px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;cursor:pointer;transition:all .2s">
+            <div id="rec-circle-inner" style="width:28px;height:28px;border-radius:50%;background:rgba(220,60,60,.9);transition:all .2s"></div>
+          </div>
+          <div id="intake-rec-lbl" style="font-size:13px;font-weight:600;color:rgba(255,255,255,.85);margin-bottom:4px">Press to start recording</div>
+          <div id="intake-rec-timer" style="font-family:monospace;font-size:26px;font-weight:600;color:#ffffff;margin-bottom:10px">0:00</div>
+          <canvas id="rec-canvas" height="46" style="width:100%;border-radius:6px;background:rgba(0,0,0,.2)"></canvas>
+        </div>
+        <div id="rec-status" style="font-size:11px;color:rgba(255,255,255,.6);text-align:center;min-height:18px;margin:6px 0 8px"></div>
+        <button id="analyse-btn-rec" onclick="runAnalysisFromRecording()"
+                style="width:100%;padding:10px;border-radius:8px;border:none;background:rgba(255,255,255,.1);color:rgba(255,255,255,.35);font-size:13px;font-weight:600;cursor:not-allowed" disabled>
+          Record the passage to begin
+        </button>
+      </div>
+
+      <!-- UPLOAD PANEL -->
+      <div id="panel-audio" style="display:none">
+        <label class="field-lbl" style="color:rgba(255,255,255,.7)">Audio file (MP3 &#183; WAV &#183; M4A &#183; WebM)</label>
+        <input type="file" id="audio-file" accept="audio/*" style="display:none" onchange="fileChosen(this.files)">
+        <div class="upload-zone" id="upload-zone">
           <div id="upload-text">
-
-            <div style="font-size:13px;color:var(--muted);font-weight:500">Click to select — or drag and drop</div>
-            <div style="font-size:10px;color:var(--border);margin-top:4px">MP3 &#183; WAV &#183; M4A &#183; WebM &#183; OGG</div>
+            <div style="font-size:13px;color:rgba(255,255,255,.85);font-weight:500">Click to select &#8212; or drag and drop</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:4px">MP3 &#183; WAV &#183; M4A &#183; WebM &#183; OGG</div>
           </div>
         </div>
-        <div class="prog-bar" id="prog-bar" style="display:none">
-          <div class="prog-fill" id="prog-fill" style="width:0%"></div>
-        </div>
-        <div id="status-msg" style="display:none;font-size:12px;color:var(--muted);padding:8px 10px;background:var(--parchment);border-radius:6px;margin-top:6px;line-height:1.6"></div>
+        <div class="prog-bar" id="prog-bar" style="display:none"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+        <div id="status-msg" style="display:none;font-size:12px;color:rgba(255,255,255,.85);padding:8px 10px;background:rgba(255,255,255,.1);border-radius:6px;margin-top:6px;line-height:1.6"></div>
         <button id="analyse-btn" onclick="runAnalysis()"
-                style="width:100%;margin-top:10px;padding:10px;border-radius:8px;border:none;background:#D8D4C0;color:var(--muted);font-size:13px;font-weight:600;cursor:not-allowed"
-                disabled>Select an audio file to begin</button>
+                style="width:100%;margin-top:10px;padding:10px;border-radius:8px;border:none;background:rgba(255,255,255,.1);color:rgba(255,255,255,.35);font-size:13px;font-weight:600;cursor:not-allowed" disabled>
+          Select an audio file to begin
+        </button>
       </div>
 
       <!-- JSON PANEL -->
       <div id="panel-json" style="display:none">
-        <label class="field-lbl">Paste JSON from carnatic_fluency_analyzer.py</label>
-        <textarea id="json-paste" class="field-ta" style="min-height:120px;font-family:monospace;font-size:10px;background:#1A2A10;color:#4A5E3A;margin-bottom:8px"
-                  placeholder='{"patient":"...","dysfluency_pct":34.4,"swara_prescriptions":[...]}'></textarea>
-        <div style="font-size:10px;color:var(--muted);background:#EEF0D0;border-radius:6px;padding:8px 10px;line-height:1.7;margin-bottom:8px">
-          <strong>How:</strong> add the export cell below to the end of your Colab notebook, run it, copy the printed JSON, paste above.
-        </div>
-        <details style="margin-bottom:10px">
-          <summary style="font-size:11px;font-weight:600;color:var(--maroon);cursor:pointer">Show Colab export cell &#8250;</summary>
-          <pre style="font-size:9px;background:#1A2A10;color:#4A5E3A;border:1px solid var(--border);border-radius:6px;padding:8px;margin-top:6px;overflow-x:auto;line-height:1.7;white-space:pre-wrap">import json
-class NE(json.JSONEncoder):
-    def default(self,o):
-        if isinstance(o,np.integer): return int(o)
-        if isinstance(o,np.floating): return float(o)
-        if isinstance(o,np.ndarray): return o.tolist()
-        return super().default(o)
-px={"patient":patient_name,"age":patient_age,
-    "dysfluency_pct":round(current_dysfluency_pct,1),
-    "fluent_rate":round(fluent_mean_rate,2),
-    "start_bpm":start_bpm,"target_bpm":target_bpm,
-    "swara_prescriptions":[
-        {"phoneme":sp["Phoneme"],"swara":sp["Swara"],
-         "note":sp["Note Name"],"raga":sp["Raga"],
-         "rationale":sp["Why"]}
-        for sp in swara_prescriptions]}
-print(json.dumps(px,indent=2,cls=NE))</pre>
-        </details>
+        <label class="field-lbl" style="color:rgba(255,255,255,.7)">Paste JSON from carnatic_fluency_analyzer.py</label>
+        <textarea id="json-paste" class="field-ta" style="min-height:110px;font-family:monospace;font-size:10px;background:rgba(0,0,0,.25);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.2);margin-bottom:8px"
+                  placeholder='{"patient":"...","dysfluency_pct":34.4,"swara_prescriptions":[]}'></textarea>
         <button class="btn-p" onclick="loadFromJSON()" style="width:100%">Load from JSON</button>
       </div>
 
-      <button onclick="loadDemo()" style="width:100%;padding:9px;border-radius:7px;border:1px solid var(--border);background:var(--parchment);color:var(--muted);font-size:12px;cursor:pointer;margin-top:10px">
-        Load demo &#8212; Ray Demnitz (no file needed)
+      <button onclick="loadDemo()" style="width:100%;padding:9px;border-radius:7px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);font-size:12px;cursor:pointer;margin-top:10px">
+        Load demo &#8212; Ray Demnitz (no recording needed)
       </button>
     </div>
   </div>
@@ -300,8 +455,10 @@ print(json.dumps(px,indent=2,cls=NE))</pre>
   </div>
 </div>
 
+<div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleSidebar()"></div>
+
 <div class="app-body">
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
   <div class="sb-sec"><div class="sb-head">Practice levels</div><div id="level-list"></div></div>
   <div class="sb-sec">
     <div class="sb-head">Session stats</div>
@@ -409,6 +566,18 @@ print(json.dumps(px,indent=2,cls=NE))</pre>
   <div class="panel-sec">
     <div class="panel-head">Progress</div>
     <div style="padding:8px 11px;font-size:11px;color:var(--muted);line-height:1.9" id="prog-ov">No patient loaded.</div>
+  </div>
+
+  <div class="panel-sec" id="pdf-panel" style="display:none">
+    <div class="panel-head">Prescription PDF</div>
+    <div style="padding:10px 12px">
+      <div style="font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:10px">
+        Download a full A4 prescription card with fluency summary, phoneme targets, swara verses, and tempo progression.
+      </div>
+      <button onclick="downloadPDF()" style="width:100%;padding:9px;border-radius:8px;border:none;background:var(--maroon);color:#ffffff;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+        &#8681; Download prescription PDF
+      </button>
+    </div>
   </div>
 </div>
 </div>
@@ -620,6 +789,41 @@ function calcMaxSilence(rmsArr, thr) {
   return longest;
 }
 
+// ── Noise floor calibration + silence trimming ────────────────────────────
+// Real recordings almost always have a second of lead-in/trail silence or
+// room noise. Without correcting for this, the first/last analysis segments
+// score as near-total blocks and inflate dysfluency across the whole clip.
+function computeNoiseFloor(audio) {
+  var frames = calcRms(audio);
+  if (!frames.length) return 0.001;
+  var sorted = frames.slice().sort(function(a,b){ return a-b; });
+  // 20th percentile of frame energy = a robust estimate of the "quiet" floor
+  // (room tone / mic noise), immune to a handful of very loud or very quiet
+  // outlier frames the way a simple min() or max()-based threshold is not.
+  var idx = Math.floor(sorted.length * 0.20);
+  return Math.max(sorted[idx] || 0, 0.0008);
+}
+
+function trimSilence(audio, noiseFloor) {
+  var frameLen = 1024, hop = 512;
+  var thr = noiseFloor * 3.5;
+  var firstActive = -1, lastActive = -1;
+  for (var i = 0; i + frameLen <= audio.length; i += hop) {
+    var s = 0;
+    for (var j = 0; j < frameLen; j++) s += audio[i+j] * audio[i+j];
+    var r = Math.sqrt(s / frameLen);
+    if (r > thr) {
+      if (firstActive === -1) firstActive = i;
+      lastActive = i + frameLen;
+    }
+  }
+  if (firstActive === -1) return audio; // entire clip below noise floor — fall back untouched
+  var pad = Math.floor(0.25 * SR); // keep a small natural pause at each end
+  var start = Math.max(0, firstActive - pad);
+  var end   = Math.min(audio.length, lastActive + pad);
+  return audio.slice(start, end);
+}
+
 function calcSylRate(seg) {
   var env = new Float32Array(seg.length), mx = 0;
   for (var i = 0; i < seg.length; i++) { env[i] = Math.abs(seg[i]); if (env[i] > mx) mx = env[i]; }
@@ -693,29 +897,44 @@ function yinPitch(seg) {
   return mn < 0.5 ? SR / mnT : NaN;
 }
 
-function analyseAudio(audio, globalRate) {
+function analyseAudio(rawAudio, globalRate) {
   globalRate = globalRate || 4.0;
+
+  // ── Step 1: calibrate noise floor and trim dead air ──────────────────────
+  // This single step removes the most common cause of false "dysfluency":
+  // lead-in/trail silence around the actual speech being scored as blocks.
+  var noiseFloor = computeNoiseFloor(rawAudio);
+  var audio = trimSilence(rawAudio, noiseFloor);
+
   var segSamples = Math.floor(2.0 * SR), results = [];
+
   for (var start = 0; start + segSamples <= audio.length; start += segSamples) {
     var seg = audio.slice(start, start + segSamples);
     if (seg.length < SR) continue;
-    var score = 0, reasons = [];
+
+    var reasons = [];
     var rmsArr = calcRms(seg);
     var maxRms = Math.max.apply(null, rmsArr);
     if (maxRms === 0) continue;
-    var sth = maxRms * 0.1;
-    var pr = rmsArr.filter(function(v){ return v < sth; }).length / rmsArr.length;
+
+    // ── Silence threshold: anchored to the WHOLE-RECORDING noise floor,
+    // not this segment's own peak. A segment containing one loud plosive
+    // no longer makes its own quieter (but still voiced) frames look silent.
+    var sth = Math.max(noiseFloor * 3, maxRms * 0.06);
+    var pr  = rmsArr.filter(function(v){ return v < sth; }).length / rmsArr.length;
     var sil = calcMaxSilence(rmsArr, sth);
     var rate = calcSylRate(seg);
+
     var subLen = Math.floor(seg.length / 8);
     var centroids = [];
     for (var s2 = 0; s2 < 8; s2++) centroids.push(calcCentroid(seg.slice(s2*subLen, (s2+1)*subLen)));
     var cMean = centroids.reduce(function(a,b){ return a+b; }, 0) / 8;
     var cStd = Math.sqrt(centroids.map(function(c){ return (c-cMean)*(c-cMean); }).reduce(function(a,b){ return a+b; }, 0) / 8);
+
     var pitches = [];
     var pStep = Math.floor(seg.length / 16);
-    for (var s2 = 0; s2 < 16; s2++) {
-      var p = yinPitch(seg.slice(s2*pStep, (s2+1)*pStep));
+    for (var s3 = 0; s3 < 16; s3++) {
+      var p = yinPitch(seg.slice(s3*pStep, (s3+1)*pStep));
       if (!isNaN(p) && p > 60 && p < 500) pitches.push(p);
     }
     var pStd = 999, jitter = 0;
@@ -725,45 +944,68 @@ function analyseAudio(audio, globalRate) {
       var periods = pitches.map(function(p){ return 1/p; });
       var pm2 = periods.reduce(function(a,b){ return a+b; }, 0) / periods.length;
       var diffs = 0;
-      for (var i = 1; i < periods.length; i++) diffs += Math.abs(periods[i] - periods[i-1]);
+      for (var i2 = 1; i2 < periods.length; i2++) diffs += Math.abs(periods[i2] - periods[i2-1]);
       jitter = diffs / (periods.length - 1) / pm2;
     }
+
     var amp = [], ampMean = 0;
-    for (var i = 0; i < seg.length; i++) { amp.push(Math.abs(seg[i])); ampMean += Math.abs(seg[i]); }
+    for (var i3 = 0; i3 < seg.length; i3++) { amp.push(Math.abs(seg[i3])); ampMean += Math.abs(seg[i3]); }
     ampMean /= seg.length;
     var shimDiffs = 0;
-    for (var i = 1; i < amp.length; i++) shimDiffs += Math.abs(amp[i] - amp[i-1]);
+    for (var i4 = 1; i4 < amp.length; i4++) shimDiffs += Math.abs(amp[i4] - amp[i4-1]);
     var shimmer = ampMean > 0 ? shimDiffs / (amp.length - 1) / ampMean : 0;
 
-    if (pr > .5) { score += 4; reasons.push("Very high pause ratio"); }
-    else if (pr > .35) { score += 2; reasons.push("High pause ratio"); }
-    else if (pr > .25) { score += 1; reasons.push("Moderate pause ratio"); }
-    if (sil > .75) { score += 5; reasons.push("Very long silence (" + sil.toFixed(2) + "s)"); }
-    else if (sil > .5) { score += 3; reasons.push("Long silence (" + sil.toFixed(2) + "s)"); }
-    else if (sil > .35) { score += 1; reasons.push("Brief silence"); }
-    if (rate < .4*globalRate) { score += 4; reasons.push("Extremely slow rate"); }
-    else if (rate < .6*globalRate) { score += 3; reasons.push("Slow rate"); }
-    else if (rate < .8*globalRate) { score += 1; reasons.push("Slightly slow rate"); }
-    if (pStd < 5) { score += 4; reasons.push("Extremely stable pitch"); }
-    else if (pStd < 10) { score += 2; reasons.push("Very stable pitch"); }
-    else if (pStd < 15) { score += 1; reasons.push("Moderately stable pitch"); }
-    if (cStd < 100) { score += 4; reasons.push("Extremely low spectral variation"); }
-    else if (cStd < 200) { score += 2; reasons.push("Low spectral variation"); }
-    else if (cStd < 300) { score += 1; reasons.push("Moderate spectral variation"); }
-    if (jitter > .06) { score += 2; reasons.push("Very high jitter"); }
-    else if (jitter > .03) { score += 1; reasons.push("High jitter"); }
-    if (shimmer > .35) { score += 2; reasons.push("Very high shimmer"); }
-    else if (shimmer > .20) { score += 1; reasons.push("High shimmer"); }
-    if (reasons.length >= 3) { score += 2; reasons.push("Multiple indicators"); }
+    // ══════════════════════════════════════════════════════════════════════
+    // GATED SCORING — a segment can only be Dysfluent if it shows at least
+    // one genuine PRIMARY block/pause signal. Secondary voice-quality
+    // measures (jitter, shimmer, pitch/spectral stability) can raise
+    // confidence once a primary signal exists, but can never by themselves
+    // push a segment into Dysfluent. This mirrors clinical practice: calm,
+    // monotone, or quiet REGULAR reading is not a stutter, only genuine
+    // silent blocks, prolongations, or abnormally slowed rate are.
+    // ══════════════════════════════════════════════════════════════════════
+    var score = 0, hasPrimary = false;
 
-    var label = score >= 6 ? "Dysfluent" : "Fluent";
+    // Absolute silence duration — thresholds set above normal sentence-
+    // internal reading pauses (~0.3–0.5s is completely normal in speech).
+    if (sil > 1.1)      { score += 5; hasPrimary = true; reasons.push("Very long silence (" + sil.toFixed(2) + "s)"); }
+    else if (sil > 0.8) { score += 3; hasPrimary = true; reasons.push("Long silence (" + sil.toFixed(2) + "s)"); }
+    else if (sil > 0.55){ score += 1;                    reasons.push("Brief pause (" + sil.toFixed(2) + "s)"); }
+
+    // Pause ratio — how much of the segment is below the noise-floor-based
+    // threshold. Raised vs. before since normal reading naturally has gaps
+    // between words/phrases that are NOT blocks.
+    if (pr > 0.55)      { score += 3; hasPrimary = true; reasons.push("Very high pause ratio (" + pr.toFixed(2) + ")"); }
+    else if (pr > 0.42) { score += 1; hasPrimary = true; reasons.push("High pause ratio (" + pr.toFixed(2) + ")"); }
+
+    // Rate relative to the patient's own fluent baseline — only flagged as
+    // primary when clearly and severely reduced.
+    if (rate < 0.35 * globalRate)      { score += 3; hasPrimary = true; reasons.push("Extremely slow rate (" + rate.toFixed(2) + ")"); }
+    else if (rate < 0.55 * globalRate) { score += 1; hasPrimary = true; reasons.push("Slow rate (" + rate.toFixed(2) + ")"); }
+
+    // ── Secondary indicators — only counted once a primary signal exists.
+    // These add confidence to a real block rather than manufacturing one
+    // out of ordinary vocal quality variation.
+    if (hasPrimary) {
+      if (jitter > 0.06) { score += 1; reasons.push("High jitter"); }
+      if (shimmer > 0.35) { score += 1; reasons.push("High shimmer"); }
+      // "Prolongation" signature: voice sustained with almost no pitch
+      // movement AND almost no timbral movement at the same time. Either
+      // alone is normal (a calm reading voice can be pitch-stable OR
+      // spectrally stable) — together during an active pause they indicate
+      // a held/prolonged sound rather than natural articulation.
+      if (pStd < 6 && cStd < 120) { score += 2; reasons.push("Prolonged monotone segment"); }
+    }
+
+    var label = (hasPrimary && score >= 4) ? "Dysfluent" : "Fluent";
+
     results.push({
       start: +(start/SR).toFixed(2), end: +((start+segSamples)/SR).toFixed(2),
       classification: label, score: score,
       pause_ratio: +pr.toFixed(3), max_silence: +sil.toFixed(3),
       syllables_sec: +rate.toFixed(2), pitch_std: +pStd.toFixed(2),
       jitter: +jitter.toFixed(4), shimmer: +shimmer.toFixed(4),
-      reasons: reasons.join("; ")
+      reasons: reasons.length ? reasons.join("; ") : "No dysfluency indicators"
     });
   }
   return results;
@@ -880,11 +1122,176 @@ function countSyllables(sentence) {
 var selectedFile = null, baselineResults = null;
 
 function switchTab(tab) {
-  document.getElementById("panel-audio").style.display = tab === "audio" ? "block" : "none";
-  document.getElementById("panel-json").style.display  = tab === "json"  ? "block" : "none";
-  var ta = document.getElementById("tab-audio"), tj = document.getElementById("tab-json");
-  ta.className = "tab-btn " + (tab === "audio" ? "active" : "inactive");
-  tj.className = "tab-btn " + (tab === "json"  ? "active" : "inactive");
+  ["audio","record","json"].forEach(function(t) {
+    var panel = document.getElementById("panel-" + t);
+    var btn   = document.getElementById("tab-" + t);
+    if (panel) panel.style.display = t === tab ? "block" : "none";
+    if (btn)   btn.className = "tab-btn " + (t === tab ? "active" : "inactive");
+  });
+  if (tab !== "record" && intakeRecording) stopIntakeRecord();
+}
+
+// ── INTAKE RECORDING ─────────────────────────────────────────────────────────
+var intakeRecorder = null, intakeChunks = [], intakeRecording = false;
+var intakeTimerIv = null, intakeSecs = 0, intakeBlob = null;
+var intakeStream = null, intakeAnalyser = null, intakeAnimFrame = null;
+
+function toggleIntakeRecord() {
+  intakeRecording ? stopIntakeRecord() : startIntakeRecord();
+}
+
+function startIntakeRecord() {
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
+    intakeStream = stream;
+    intakeChunks = []; intakeSecs = 0; intakeBlob = null;
+    var mime = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "audio/ogg";
+    intakeRecorder = new MediaRecorder(stream, { mimeType: mime });
+    intakeRecorder.ondataavailable = function(e) { if (e.data.size > 0) intakeChunks.push(e.data); };
+    intakeRecorder.onstop = function() {
+      intakeBlob = new Blob(intakeChunks, { type: mime });
+      intakeStream.getTracks().forEach(function(t){ t.stop(); });
+      document.getElementById("rec-status").textContent = "Recording saved — " + formatTime(intakeSecs) + ". Press Analyse to continue.";
+      document.getElementById("intake-rec-lbl").textContent = "Recording complete";
+      // Enable analyse button
+      var btn = document.getElementById("analyse-btn-rec");
+      btn.disabled = false;
+      btn.style.background = "var(--maroon2)";
+      btn.style.color = "#ffffff";
+      btn.style.cursor = "pointer";
+      btn.textContent = "Run full fluency analysis";
+      cancelAnimationFrame(intakeAnimFrame);
+    };
+    intakeRecorder.start(250);
+    intakeRecording = true;
+
+    // UI
+    var circle = document.getElementById("rec-circle");
+    circle.style.borderColor = "rgba(255,100,100,.8)";
+    circle.style.background  = "rgba(255,50,50,.15)";
+    document.getElementById("rec-circle-inner").style.background = "#FF4444";
+    document.getElementById("rec-circle-inner").style.borderRadius = "4px";
+    document.getElementById("intake-rec-lbl").textContent = "Recording… press to stop";
+    document.getElementById("rec-status").textContent = "";
+
+    intakeTimerIv = setInterval(function(){
+      intakeSecs++;
+      document.getElementById("intake-rec-timer").textContent = formatTime(intakeSecs);
+    }, 1000);
+
+    // Waveform
+    var actx = new (window.AudioContext || window.webkitAudioContext)();
+    intakeAnalyser = actx.createAnalyser();
+    intakeAnalyser.fftSize = 256;
+    var src = actx.createMediaStreamSource(stream);
+    src.connect(intakeAnalyser);
+    drawIntakeWave();
+  }).catch(function(e) {
+    document.getElementById("rec-status").textContent = "Microphone error: " + e.message;
+  });
+}
+
+function stopIntakeRecord() {
+  if (intakeRecorder && intakeRecorder.state !== "inactive") intakeRecorder.stop();
+  intakeRecording = false;
+  clearInterval(intakeTimerIv);
+  var circle = document.getElementById("rec-circle");
+  circle.style.borderColor = "rgba(255,255,255,.25)";
+  circle.style.background  = "rgba(255,255,255,.08)";
+  document.getElementById("rec-circle-inner").style.background = "rgba(255,100,100,.8)";
+  document.getElementById("rec-circle-inner").style.borderRadius = "50%";
+}
+
+function drawIntakeWave() {
+  var canvas = document.getElementById("rec-canvas");
+  if (!canvas || !intakeAnalyser) return;
+  var ctx = canvas.getContext("2d");
+  var W = canvas.offsetWidth, H = canvas.height;
+  canvas.width = W * devicePixelRatio;
+  canvas.height = H * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  var data = new Uint8Array(intakeAnalyser.frequencyBinCount);
+  function draw() {
+    if (!intakeRecording) return;
+    intakeAnimFrame = requestAnimationFrame(draw);
+    intakeAnalyser.getByteTimeDomainData(data);
+    ctx.fillStyle = "rgba(0,0,0,.2)";
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = "rgba(212,175,0,.8)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    var sliceW = W / data.length;
+    for (var i = 0; i < data.length; i++) {
+      var x = i * sliceW;
+      var y = (data[i] / 255) * H;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+  draw();
+}
+
+function runAnalysisFromRecording() {
+  if (!intakeBlob) return;
+  selectedFile = intakeBlob;
+  // Run the same analysis pipeline
+  var name = document.getElementById("in-name").value.trim() || "Patient";
+  var sentence = DIAGNOSTIC_PASSAGE;
+  var btn = document.getElementById("analyse-btn-rec");
+  btn.disabled = true; btn.textContent = "Analysing…";
+  document.getElementById("rec-status").textContent = "Decoding recording…";
+  decodeAudioFile(intakeBlob).then(function(audio) {
+    document.getElementById("rec-status").textContent = "Running fluency analysis…";
+    return new Promise(function(r){ setTimeout(function(){ r(audio); }, 60); });
+  }).then(function(audio) {
+    var totalSyl     = countSyllables(sentence);
+    var noiseFloor0  = computeNoiseFloor(audio);
+    var trimmedAudio = trimSilence(audio, noiseFloor0);
+    var duration     = trimmedAudio.length / SR;  // trimmed — excludes lead-in/trail silence
+    var globalRate   = totalSyl > 0 ? totalSyl / Math.max(duration, 0.001) : 4.0;
+    return new Promise(function(r){ setTimeout(function(){ r({ audio:audio, duration:duration, globalRate:globalRate }); }, 60); });
+  }).then(function(obj) {
+    var results = analyseAudio(obj.audio, obj.globalRate);
+    document.getElementById("rec-status").textContent = "Extracting phonemes…";
+    return new Promise(function(r){ setTimeout(function(){ r({ results:results, duration:obj.duration, globalRate:obj.globalRate }); }, 60); });
+  }).then(function(obj) {
+    var results = obj.results, duration = obj.duration, globalRate = obj.globalRate;
+    var words = sentence ? sentence.split(/\s+/) : [];
+    var numSeg = results.length, wps = Math.max(1, Math.floor(words.length / Math.max(numSeg,1)));
+    var dysCounts = {}, fluCounts = {};
+    results.forEach(function(row, idx) {
+      var ws = words.slice(idx*wps,(idx+1)*wps);
+      var phones = []; ws.forEach(function(w){ phones = phones.concat(wordPhonemes(w)); });
+      var target = row.classification === "Dysfluent" ? dysCounts : fluCounts;
+      phones.forEach(function(ph){ target[ph] = (target[ph]||0)+1; });
+    });
+    var stuttered = [];
+    Object.keys(dysCounts).forEach(function(ph){
+      var dc=dysCounts[ph], fc=fluCounts[ph]||0;
+      if(dc>fc) stuttered.push({ph:ph,dc:dc,fc:fc});
+    });
+    stuttered.sort(function(a,b){ return (b.dc-b.fc)-(a.dc-a.fc); });
+    var topPh = stuttered.slice(0,5).map(function(x){ return x.ph; });
+    var totalSegs=results.length, dysSegs=results.filter(function(r){return r.classification==="Dysfluent";}).length;
+    var dysPct=+(dysSegs/totalSegs*100).toFixed(1);
+    var fluRates=results.filter(function(r){return r.classification==="Fluent"&&r.syllables_sec>0;}).map(function(r){return r.syllables_sec;});
+    var fluRate=fluRates.length?+(fluRates.reduce(function(a,b){return a+b;},0)/fluRates.length).toFixed(2):globalRate;
+    var startBpm=Math.max(30,Math.min(Math.round(fluRate*.45*60),80));
+    var targetBpm=Math.max(60,Math.min(Math.round(fluRate*.9*60),140));
+    var swaraPresc=(topPh.length?topPh:["General"]).map(function(ph){
+      var key=SM[ph]?ph:"General"; var m=SM[key];
+      return{phoneme:ph,swara:m.sw,note:m.note,raga:m.raga,rationale:m.rat,verses:m.verses};
+    });
+    baselineResults={dysPct:dysPct,fluRate:fluRate};
+    var px={patient:name,age:document.getElementById("in-age").value.trim()||"—",
+      duration_sec:+duration.toFixed(2),dysfluency_pct:dysPct,fluent_rate:fluRate,
+      start_bpm:startBpm,target_bpm:targetBpm,top_phonemes:topPh,
+      swara_prescriptions:swaraPresc,fluency_segments:results};
+    document.getElementById("rec-status").textContent = "✓ Done — "+dysSegs+"/"+totalSegs+" dysfluent segments ("+dysPct+"%)";
+    setTimeout(function(){ applyPrescription(px); document.getElementById("intake-modal").classList.remove("open"); }, 700);
+  }).catch(function(e){
+    document.getElementById("rec-status").textContent = "Error: " + e.message;
+    btn.disabled=false; btn.textContent="Retry analysis";
+  });
 }
 
 function initUploadZone() {
@@ -960,11 +1367,13 @@ function setStatus(msg, prog) {
   }
 }
 
+var DIAGNOSTIC_PASSAGE = "Sam's shy cat chased five zebras through the big village near our yellow farm. The cook quickly washed both dishes with her rough gloves and sang a joyful song. Peter picked peppers while his twin brother measured the long wooden fence. Don't zip your jacket near the sharp rocks or you might get hurt. Vivid vines hung low over the narrow path that leads to the misty lake. She sells azure treasure at leisure, measuring the beige genre with pleasure. The judge charged George with using rouge on the beige vision. Whether the weather is warm or whether it's not, we will gather feathers together. The phone rang through the thick fog as young boys played rough games on the bridge. Quick wax jobs vex daft quiz kids. Zinc mixed with oxygen forms a curious molecule. Hugh knew the new gnu flew through the blue dew.";
+
 function runAnalysis() {
   if (!selectedFile) { alert("Please select an audio file."); return; }
   var name     = document.getElementById("in-name").value.trim() || "Patient";
   var age      = document.getElementById("in-age").value.trim()  || "\u2014";
-  var sentence = document.getElementById("in-sentence").value.trim();
+  var sentence = DIAGNOSTIC_PASSAGE;
   var btn      = document.getElementById("analyse-btn");
   btn.disabled    = true;
   btn.textContent = "Analysing\u2026";
@@ -974,9 +1383,11 @@ function runAnalysis() {
     setStatus("Running fluency analysis\u2026", 35);
     return new Promise(function(resolve) { setTimeout(function() { resolve(audio); }, 60); });
   }).then(function(audio) {
-    var totalSyl   = countSyllables(sentence);
-    var duration   = audio.length / SR;
-    var globalRate = totalSyl > 0 ? totalSyl / Math.max(duration, 0.001) : 4.0;
+    var totalSyl    = countSyllables(sentence);
+    var noiseFloor0 = computeNoiseFloor(audio);
+    var trimmedAudio= trimSilence(audio, noiseFloor0);
+    var duration    = trimmedAudio.length / SR;   // trimmed — excludes lead-in/trail silence
+    var globalRate  = totalSyl > 0 ? totalSyl / Math.max(duration, 0.001) : 4.0;
     setStatus("Scoring segments\u2026", 55);
     return new Promise(function(resolve) {
       setTimeout(function() { resolve({ audio: audio, duration: duration, globalRate: globalRate }); }, 60);
@@ -987,7 +1398,7 @@ function runAnalysis() {
     return new Promise(function(resolve) { setTimeout(function() { resolve({ results: results, duration: obj.duration, globalRate: obj.globalRate }); }, 60); });
   }).then(function(obj) {
     var results = obj.results, duration = obj.duration, globalRate = obj.globalRate;
-    var sentence2 = document.getElementById("in-sentence").value.trim();
+    var sentence2 = DIAGNOSTIC_PASSAGE;
     var words = sentence2 ? sentence2.split(/\s+/) : [];
     var numSeg = results.length;
     var wps = Math.max(1, Math.floor(words.length / Math.max(numSeg, 1)));
@@ -1093,6 +1504,7 @@ function applyPrescription(data) {
   buildLevelList(); buildPhTargets(); renderLevel(); updateStats(); updateProgOv();
   addLog("\u{1F4CB}", "Loaded: <strong>" + (data.patient || "Patient") + "</strong> \u00B7 baseline: <strong>" + (data.dysfluency_pct || "?") + "%</strong>");
   addLog("\u{1F3B5}", "Level 1: phoneme <strong>" + levels[0].phoneme + "</strong> \u00B7 " + levels[0].raga + " \u00B7 " + bpm + " BPM");
+  document.getElementById("pdf-panel").style.display = "block";
 }
 
 function buildLevelList() {
@@ -1117,7 +1529,7 @@ function buildPhTargets() {
   });
 }
 
-function switchLevel(i) { curLvl=i; curVerse=curLine=curNote=0; cycleCount=0; lastRecBlob=null; buildLevelList(); renderLevel(); updateStats(); resetCheckPanel(); }
+function switchLevel(i) { curLvl=i; curVerse=curLine=curNote=0; cycleCount=0; lastRecBlob=null; buildLevelList(); renderLevel(); updateStats(); resetCheckPanel(); closeSidebarIfMobile(); }
 
 function renderLevel() {
   if (!levels.length) return;
@@ -1356,6 +1768,221 @@ function addLog(ico, txt) {
   log.insertBefore(el,log.firstChild);
   while(log.children.length>40)log.removeChild(log.lastChild);
 }
+
+// ═══════════════════════════════════════════════════
+// PDF GENERATION (jsPDF)
+// ═══════════════════════════════════════════════════
+function downloadPDF() {
+  if (!prescription || !levels.length) { alert("No prescription loaded."); return; }
+  var btn = document.querySelector("#pdf-panel button");
+  if (btn) { btn.textContent = "Generating\u2026"; btn.style.opacity = "0.7"; }
+
+  setTimeout(function() {
+    try {
+      var jsPDF = window.jspdf.jsPDF;
+      var doc = new jsPDF({ orientation:"portrait", unit:"mm", format:"a4" });
+      var W = 210, mg = 18, cW = W - mg*2;
+      var y = 20;
+      var today = new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"});
+
+      var CG = [27,58,45], CGo = [212,190,80], CR = [250,246,238], CL = [232,228,212];
+      var CI = [26,37,16], CM = [74,94,58], CW = [255,255,255];
+
+      function sf(c){doc.setFillColor(c[0],c[1],c[2]);}
+      function sd(c){doc.setDrawColor(c[0],c[1],c[2]);}
+      function st(c){doc.setTextColor(c[0],c[1],c[2]);}
+      function hl(yy,c){sd(c||[180,140,0]);doc.setLineWidth(0.4);doc.line(mg,yy,W-mg,yy);}
+      function chk(yy,n){if(yy+(n||20)>277){doc.addPage();return 18;}return yy;}
+
+      function secHdr(title,yy){
+        sf(CG);doc.rect(mg,yy,cW,7,"F");
+        sd([180,140,0]);doc.setLineWidth(0.3);doc.rect(mg,yy,cW,7);
+        st(CW);doc.setFont("helvetica","bold");doc.setFontSize(9);
+        doc.text(title,mg+3,yy+5);return yy+10;
+      }
+
+      // Title block
+      sf(CG);doc.rect(0,0,W,28,"F");
+      doc.setFont("helvetica","bold");doc.setFontSize(18);st(CW);
+      doc.text("Carnatic Speech Therapy",mg,13);
+      doc.setFont("helvetica","normal");doc.setFontSize(9);st(CGo);
+      doc.text("Personalised Vocal Programme Prescription",mg,20);
+      hl(28);y=34;
+
+      // Patient info
+      sf(CR);doc.rect(mg,y,cW,18,"F");sd([180,140,0]);doc.setLineWidth(0.3);doc.rect(mg,y,cW,18);
+      doc.setFont("helvetica","bold");doc.setFontSize(8);st(CM);
+      doc.text("Patient:",mg+3,y+5.5);doc.text("Age:",mg+3,y+11.5);
+      doc.text("Date:",W/2+2,y+5.5);doc.text("Session:",W/2+2,y+11.5);
+      doc.setFont("helvetica","normal");st(CI);
+      doc.text(prescription.patient||"Patient",mg+22,y+5.5);
+      doc.text(String(prescription.age||"-"),mg+22,y+11.5);
+      doc.text(today,W/2+20,y+5.5);doc.text("1 (Baseline)",W/2+22,y+11.5);
+      y+=22;
+
+      // Section 1: Fluency summary
+      y=secHdr("1.  Fluency Analysis Summary",y);
+      var segs=prescription.fluency_segments||[];
+      var tot=segs.length,dys=segs.filter(function(s){return s.classification==="Dysfluent";}).length;
+      var rows1=[
+        ["Total segments analysed",String(tot)],
+        ["Dysfluent segments",dys+" ("+( prescription.dysfluency_pct||0)+"%)"],
+        ["Fluent segments",String(tot-dys)],
+        ["Average fluent speech rate",(prescription.fluent_rate||0)+" syllables/sec"],
+        ["Audio duration",(prescription.duration_sec||0)+" sec"],
+      ];
+      rows1.forEach(function(r,i){
+        sf(i%2===0?CR:CL);doc.rect(mg,y,cW,5.5,"F");
+        sd([180,140,0]);doc.setLineWidth(0.2);doc.rect(mg,y,cW,5.5);
+        doc.setFont("helvetica","bold");doc.setFontSize(7.5);st(CM);doc.text(r[0],mg+2,y+3.8);
+        doc.setFont("helvetica","normal");st(CI);doc.text(r[1],mg+80,y+3.8);
+        y+=5.5;
+      });y+=5;
+
+      // Section 2: Phonemes
+      y=chk(y,20);y=secHdr("2.  Phonemes Requiring Attention",y);
+      var topPh=prescription.top_phonemes||[];
+      var phTxt=topPh.length?"Priority targets: "+topPh.join(", ")+"."
+        :"No dominant stuttered phoneme detected. General foundational exercises prescribed.";
+      doc.setFont("helvetica","normal");doc.setFontSize(8.5);st(CI);
+      doc.splitTextToSize(phTxt,cW-4).forEach(function(l){doc.text(l,mg+2,y);y+=4.5;});
+      y+=4;
+
+      // Section 3: Swara prescriptions
+      y=chk(y,30);y=secHdr("3.  Swara Exercise Prescription",y);
+      var prescs=prescription.swara_prescriptions||[];
+      prescs.forEach(function(sp,pi){
+        y=chk(y,40);
+        // Phoneme header
+        sf(CG);doc.rect(mg,y,cW,6.5,"F");sd([180,140,0]);doc.setLineWidth(0.3);doc.rect(mg,y,cW,6.5);
+        doc.setFont("helvetica","bold");doc.setFontSize(8);st(CW);
+        doc.text("Phoneme: "+sp.phoneme,mg+3,y+4.3);
+        doc.setFont("helvetica","normal");doc.setFontSize(7.5);
+        doc.text("Swara: "+(sp.note||sp.swara),mg+40,y+4.3);
+        doc.text("Raga: "+sp.raga,mg+88,y+4.3);
+        doc.text("Priority: "+(pi+1),mg+145,y+4.3);
+        y+=8;
+        // Rationale
+        doc.setFont("helvetica","oblique");doc.setFontSize(7.5);st(CM);
+        doc.splitTextToSize("Why: "+(sp.rationale||""),cW-4).forEach(function(l){doc.text(l,mg+2,y);y+=4;});
+        y+=2;
+        // Verses
+        (sp.verses||[]).forEach(function(v,vi){
+          y=chk(y,28);
+          sf(CL);doc.rect(mg,y,cW,5.5,"F");sd([180,140,0]);doc.setLineWidth(0.2);doc.rect(mg,y,cW,5.5);
+          doc.setFont("helvetica","bold");doc.setFontSize(7.5);st(CI);
+          doc.text("Verse "+(vi+1)+" \u2014 "+(v.name||""),mg+2,y+3.8);
+          y+=6.5;
+          (v.lines||[]).forEach(function(ln,li){
+            y=chk(y,7);
+            sf(li%2===0?CR:CL);doc.rect(mg,y,cW,5,"F");
+            sd([180,140,0]);doc.setLineWidth(0.15);doc.rect(mg,y,cW,5);
+            doc.setFont("helvetica","normal");doc.setFontSize(6.5);st(CM);doc.text("L"+(li+1),mg+1.5,y+3.3);
+            doc.setFont("courier","normal");doc.setFontSize(7.5);st(CI);doc.text(ln,mg+8,y+3.3);
+            y+=5;
+          });y+=3;
+        });
+        // Instruction box
+        y=chk(y,10);sf([240,248,230]);doc.rect(mg,y,cW,8,"F");sd([180,140,0]);doc.setLineWidth(0.3);doc.rect(mg,y,cW,8);
+        doc.setFont("helvetica","normal");doc.setFontSize(7.5);st(CI);
+        var ins="Practice all 3 verses for "+sp.phoneme+" at "+(prescription.start_bpm||80)+" BPM in Adi Tala. Each verse = 4 lines x 8 beats. Repeat 3x. ~10 min.";
+        var insL=doc.splitTextToSize(ins,cW-6);insL.forEach(function(l,i){doc.text(l,mg+3,y+4+i*3.8);});
+        y+=12;
+      });
+
+      // Section 4: Tempo
+      y=chk(y,45);y=secHdr("4.  Tala & Tempo Progression",y);
+      doc.setFont("helvetica","normal");doc.setFontSize(8);st(CI);
+      doc.text("Adi Tala (8 beats). Advance when dysfluency <5% for 3 consecutive sessions.",mg+2,y);y+=7;
+      var sbpms=prescription.stage_bpms||[prescription.start_bpm||80];
+      var kala=function(b){return b<50?"Vilamba Kala":b<80?"Vilamba-Madhya":b<110?"Madhya Kala":b<140?"Madhya-Drita":"Drita Kala";};
+      var tX=[mg,mg+38,mg+60,mg+110];
+      sf(CG);doc.rect(mg,y,cW,6,"F");sd([180,140,0]);doc.setLineWidth(0.3);doc.rect(mg,y,cW,6);
+      ["Stage","BPM","Carnatic Kala","Advance When"].forEach(function(h,i){doc.setFont("helvetica","bold");doc.setFontSize(7.5);st(CW);doc.text(h,tX[i]+2,y+4);});y+=6;
+      sbpms.forEach(function(b,i){
+        sf(i===0?[240,248,200]:i%2===0?CR:CL);doc.rect(mg,y,cW,5.5,"F");sd([180,140,0]);doc.setLineWidth(0.2);doc.rect(mg,y,cW,5.5);
+        var row=["Stage "+(i+1)+(i===0?" \u2190 Start":i===sbpms.length-1?" \u2190 Target":""),b+" BPM",kala(b),i===sbpms.length-1?"Maintenance":"<5% / 3 sessions"];
+        row.forEach(function(c,ci){doc.setFont("helvetica",i===0?"bold":"normal");doc.setFontSize(7.5);st(CI);doc.text(String(c),tX[ci]+2,y+3.8);});y+=5.5;
+      });y+=6;
+
+      // Section 5: Daily programme
+      y=chk(y,45);y=secHdr("5.  Daily Practice Structure (30 min)",y);
+      var sb=prescription.start_bpm||80;
+      var srows=[
+        ["1","Sarali Varisai — Sa Ri Ga Ma Pa Da Ni Sa","8 min",sb+" BPM"],
+        ["2","Targeted Swara Patterns (priority phonemes first)","10 min",sb+" BPM"],
+        ["3","Janta Varisai — Sa Sa | Ri Ri | Ga Ga","5 min",sb+" BPM"],
+        ["4","Breath Exercise — Sa sustained, 4-count inhale, 8-count hold","5 min","Free"],
+        ["5","Free Singing — any melody the patient enjoys","2 min","Free"],
+      ];
+      var sX=[mg,mg+12,mg+138,mg+156];
+      sf(CG);doc.rect(mg,y,cW,6,"F");sd([180,140,0]);doc.setLineWidth(0.3);doc.rect(mg,y,cW,6);
+      ["Step","Activity","Time","Tempo"].forEach(function(h,i){doc.setFont("helvetica","bold");doc.setFontSize(7.5);st(CW);doc.text(h,sX[i]+1.5,y+4);});y+=6;
+      srows.forEach(function(r,ri){
+        y=chk(y,10);sf(ri%2===0?CR:CL);doc.rect(mg,y,cW,8,"F");sd([180,140,0]);doc.setLineWidth(0.2);doc.rect(mg,y,cW,8);
+        doc.setFont("helvetica","bold");doc.setFontSize(7.5);st(CI);doc.text(r[0],sX[0]+3,y+5);
+        doc.setFont("helvetica","normal");
+        doc.splitTextToSize(r[1],124).forEach(function(l,li){doc.text(l,sX[1]+1.5,y+4+li*3.5);});
+        doc.text(r[2],sX[2]+1,y+5);doc.text(r[3],sX[3]+1,y+5);y+=8;
+      });y+=6;
+
+      // Section 6: Raga
+      y=chk(y,25);y=secHdr("6.  Raga of the Week",y);
+      var rd={"Mohanam":"S R2 G3 P D2 S — Pentatonic. Calm and bright. Best for beginners.","Hamsadhwani":"S R2 G3 P N3 S — Pentatonic. Joyful and confidence-building.","Bhairavi":"S R1 G2 M1 P D1 N2 S — Full scale. Meditative. For high anxiety.","Shankarabharanam":"S R2 G3 M1 P D2 N3 S — Full scale (equivalent to C major). Advanced.","Bilahari":"S R2 G3 P D2 N3 S — Hexatonic. Confident and uplifting.","Kambhoji":"S R2 G3 M1 P D2 S — Hexatonic. Warm and grounded."};
+      var pr=(prescription.swara_prescriptions[0]||{}).raga||"Mohanam";
+      doc.setFont("helvetica","bold");doc.setFontSize(8.5);st(CI);doc.text(pr,mg+2,y);y+=4.5;
+      doc.setFont("helvetica","normal");doc.setFontSize(8);st(CM);
+      doc.splitTextToSize(rd[pr]||"Selected based on primary stuttered phoneme.",cW-4).forEach(function(l){doc.text(l,mg+2,y);y+=4;});
+      y+=5;
+
+      // Footer
+      hl(y);y+=4;
+      doc.setFont("helvetica","oblique");doc.setFontSize(7);st(CM);
+      doc.splitTextToSize("This prescription is generated by the Carnatic Speech Therapy app. It is intended to complement, not replace, professional speech therapy. Please review with a qualified speech-language pathologist.",cW).forEach(function(l){doc.text(l,mg,y);y+=3.5;});
+
+      var fname="prescription_"+(prescription.patient||"patient").replace(/\s+/g,"_")+".pdf";
+      doc.save(fname);
+      if(btn){btn.innerHTML="&#8681; Download prescription PDF";btn.style.opacity="1";}
+    } catch(e) {
+      console.error(e);
+      alert("PDF error: "+e.message);
+      var btn=document.querySelector("#pdf-panel button");
+      if(btn){btn.innerHTML="&#8681; Download prescription PDF";btn.style.opacity="1";}
+    }
+  }, 80);
+}
+
+// ═══════════════════════════════════════════════════
+// RESPONSIVE SIDEBAR
+// ═══════════════════════════════════════════════════
+function toggleSidebar() {
+  var sb = document.getElementById("sidebar");
+  var bd = document.getElementById("sidebar-backdrop");
+  if (!sb || !bd) return;
+  var isOpen = sb.classList.contains("open");
+  sb.classList.toggle("open", !isOpen);
+  bd.classList.toggle("open", !isOpen);
+}
+
+function closeSidebarIfMobile() {
+  if (window.innerWidth <= 900) {
+    var sb = document.getElementById("sidebar");
+    var bd = document.getElementById("sidebar-backdrop");
+    if (sb) sb.classList.remove("open");
+    if (bd) bd.classList.remove("open");
+  }
+}
+
+// Close the drawer when the viewport grows back to desktop width so the
+// sidebar doesn't stay stuck in its translated state.
+window.addEventListener("resize", function() {
+  if (window.innerWidth > 900) {
+    var sb = document.getElementById("sidebar");
+    var bd = document.getElementById("sidebar-backdrop");
+    if (sb) sb.classList.remove("open");
+    if (bd) bd.classList.remove("open");
+  }
+});
 
 // Init
 buildBeats(); setPitch(); updateBpmDisplay();
